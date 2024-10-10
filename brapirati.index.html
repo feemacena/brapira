@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flappy Bird Clone</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+            background: url('https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/089918d8-99ff-45de-a084-3fe85d0e3fcc/dg34rsu-29a3d144-dc3f-473e-a949-f73a4ba1ef7c.png/v1/fit/w_608,h_457,q_70,strp/flappy_bird_backdrop_by_lenaxux_dg34rsu-375w-2x.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9NDU3IiwicGF0aCI6IlwvZlwvMDg5OTE4ZDgtOTlmZi00NWRlLWEwODQtM2ZlODVkMGUzZmNjXC9kZzM0cnN1LTI5YTNkMTQ0LWRjM2YtNDczZS1hOTQ5LWY3M2E0YmExZWY3Yy5wbmciLCJ3aWR0aCI6Ijw9NjA4In1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmltYWdlLm9wZXJhdGlvbnMiXX0._FI7nnUO3ZCIz23z4_juaIbbiEa_LQd1lX6MK-0iUEE') no-repeat center;
+            background-size: cover;
+            width: 100vw; /* O canvas ocupa toda a largura da viewport */
+            height: 100vh; /* O canvas ocupa toda a altura da viewport */
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = window.innerWidth; // Ajusta a largura do canvas para a largura da janela
+        canvas.height = window.innerHeight; // Ajusta a altura do canvas para a altura da janela
+
+        let bird = {
+            x: 50,
+            y: canvas.height / 2, // Posição inicial do pássaro centralizada
+            width: 40,
+            height: 30,
+            vy: 0,
+            gravity: 0.5,
+            jumpForce: -7,
+            image: new Image()
+        };
+
+        bird.image.src = "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/fac4b84a-f2ba-4b67-8c2f-130230f54f3a/d93bpnj-208be415-a266-428e-9420-1405658d3e32.gif?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcL2ZhYzRiODRhLWYyYmEtNGI2Ny04YzJmLTEzMDIzMGY1NGYzYVwvZDkzYnBuai0yMDhiZTQxNS1hMjY2LTQyOGUtOTQyMC0xNDA1NjU4ZDNlMzIuZ2lmIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.fw-psRaRfcdPiEwvUaB8evP2UNU6jhDwhPJO1wHGh_E";
+
+        let pipes = [];
+        let frame = 0;
+        let score = 0;
+        let isGameOver = false;
+
+        function createPipe() {
+            const pipeHeight = Math.floor(Math.random() * 200) + 100;
+            pipes.push({
+                x: canvas.width,
+                y: pipeHeight,
+                width: 50,
+                height: 400,
+                gap: 120
+            });
+        }
+
+        function drawPipes() {
+            ctx.fillStyle = "#28a745";
+            pipes.forEach(pipe => {
+                ctx.fillRect(pipe.x, 0, pipe.width, pipe.height); // Cano superior
+                ctx.fillRect(pipe.x, pipe.height + pipe.gap, pipe.width, canvas.height - (pipe.height + pipe.gap)); // Cano inferior
+            });
+        }
+
+        function drawMessage() {
+            ctx.fillStyle = "black"; // Mudar a cor da mensagem
+            ctx.font = "40px 'Arial Black'"; // Mudar a fonte da mensagem
+            ctx.textAlign = "center"; // Centraliza o texto
+            ctx.textBaseline = "middle"; // Alinha verticalmente o texto
+            ctx.fillText("Feliz Dia do TI!❤️", canvas.width / 2, canvas.height / 2); // Centraliza a mensagem
+        }
+
+        function update() {
+            if (isGameOver) return;
+
+            bird.y += bird.vy;
+            bird.vy += bird.gravity;
+
+            if (bird.y >= canvas.height) {
+                isGameOver = true;
+                alert(`Game Over! Sua pontuação: ${score}`);
+                document.location.reload();
+            }
+
+            pipes.forEach(pipe => {
+                pipe.x -= 3;
+
+                if (
+                    bird.x < pipe.x + pipe.width &&
+                    bird.x + bird.width > pipe.x &&
+                    (bird.y < pipe.height || bird.y + bird.height > pipe.height + pipe.gap)
+                ) {
+                    isGameOver = true;
+                    alert(`Game Over! Sua pontuação: ${score}`);
+                    document.location.reload();
+                }
+            });
+
+            if (pipes.length && pipes[0].x + pipes[0].width < 0) {
+                pipes.shift();
+                score++;
+            }
+
+            if (frame % 90 === 0) {
+                createPipe();
+            }
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(bird.image, bird.x, bird.y, bird.width, bird.height); // Desenha o pássaro
+            drawPipes();
+
+            if (score >= 10) {
+                isGameOver = true;
+                drawMessage();
+            }
+
+            frame++;
+        }
+
+        function jump() {
+            if (!isGameOver) {
+                bird.vy = bird.jumpForce;
+            }
+        }
+
+        canvas.addEventListener("touchstart", (event) => {
+            event.preventDefault();
+            jump();
+        });
+
+        canvas.addEventListener("click", () => {
+            jump();
+        });
+
+        function startGame() {
+            isGameOver = false;
+            pipes = [];
+            score = 0;
+            frame = 0;
+            bird.y = canvas.height / 2; // Reinicia a posição do pássaro
+            bird.vy = 0;
+            setInterval(update, 20);
+        }
+
+        startGame();
+    </script>
+</body>
+</html>
